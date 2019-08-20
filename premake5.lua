@@ -48,7 +48,7 @@ targetdir "bin/release"
 project "netdecker"
 kind "ConsoleApp"
 links { "clzma" }
-includedirs "lzma"
-files { "*.cpp", "*.cc", "*.c", "*.h" }
+includedirs "lib"
+files { "src/*.cpp", "src/*.h" }
 
-include "lzma/."
+include "lib/lzma/."
