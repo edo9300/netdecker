@@ -1,0 +1,8 @@
+premake5
+premake5.exe
+[Bb]in/
+[Bb]uild*/
+[Oo]bj/
+.vs/
+.vscode/
+.idea/

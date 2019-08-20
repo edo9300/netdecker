@@ -1,0 +1,9 @@
+add_library (clzma STATIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_sources(clzma PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/Alloc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/LzFind.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/LzmaDec.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/LzmaEnc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/LzmaLib.c
+)
