@@ -1,6 +1,7 @@
 workspace "net"
 location "build"
 language "C++"
+cppdialect "C++14"
 objdir "obj"
 staticruntime "on"
 startproject "netdecker"
