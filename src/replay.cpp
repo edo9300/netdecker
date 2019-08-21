@@ -85,7 +85,10 @@ void Replay::ParseStream() {
 	}
 }
 
-std::vector<std::wstring> Replay::GetPlayerNames() { return players; }
+std::vector<std::wstring> Replay::GetPlayerNames() {
+	return players;
+}
+
 ReplayDeckList Replay::GetPlayerDecks() {
 	if (pheader.id == REPLAY_YRPX && yrp)
 		return yrp->decks;
@@ -132,7 +135,7 @@ void Replay::ParseParams() {
 	}
 	params.duel_flags = Read<int32_t>();
 	if (pheader.flag & REPLAY_SINGLE_MODE && pheader.id == REPLAY_YRP1) {
-		size_t slen = Read<uint16_t>();
+		/*size_t slen = */Read<uint16_t>();
 		/*scriptname.resize(slen);
 		ReadData(&scriptname[0], slen);*/
 	}

@@ -21,34 +21,7 @@
 #include <vector>
 
 #include "replay.h"
-
-#if defined(UNICODE)
-
-using path_char = wchar_t;
-#define I18N(x) L##x
-#define convert_string(x) x
-#define tostring(x) std::to_wstring(x)
-
-#else
-
-#include <codecvt>
-#include <locale>
-
-using path_char = char;
-
-#define I18N(x) x
-
-std::string wstring_to_utf8(const std::wstring &str) {
-    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> myconv;
-    return myconv.to_bytes(str);
-}
-
-#define convert_string(x) wstring_to_utf8(x)
-#define tostring(x) std::to_string(x)
-
-#endif
-
-using path_string = std::basic_string<path_char>;
+#include "utils.h"
 
 bool SaveDeck(const path_string &name, std::vector<int> mainlist,
 	      std::vector<int> extralist) {
@@ -68,17 +41,28 @@ bool SaveDeck(const path_string &name, std::vector<int> mainlist,
     return true;
 }
 
-path_string GetFilename(path_string path) {
-	size_t dashpos = path.find_last_of(I18N("\\/"));
-	if(dashpos == path_string::npos)
-		dashpos = 0;
-	else
-		dashpos++;
-	size_t dotpos = path.find_last_of(I18N("."));
-	if(dotpos == path_string::npos)
-		dotpos = path.size();
-	path_string name = path.substr(dashpos, dotpos - dashpos);
-	return name;
+void ParseReplay(const path_string & path) {
+	std::ifstream replay_file(path, std::ifstream::binary);
+	if(!replay_file.is_open()) {
+		return;
+	}
+	std::vector<uint8_t> contents((std::istreambuf_iterator<char>(replay_file)),
+								  std::istreambuf_iterator<char>());
+	replay_file.close();
+	Replay replay(contents);
+	auto players = replay.GetPlayerNames();
+	if(players.empty()) {
+		return;
+	}
+	auto decks = replay.GetPlayerDecks();
+	if(players.size() > decks.size()) {
+		return;
+	}
+	path_string filename = Utils::GetFileName(path);
+	for(int i = 0; i < decks.size(); i++) {
+		SaveDeck(filename + I18N("_") + I18N("player") + tostring(i) + I18N("_") + convert_string(players[i]) + I18N(".ydk"),
+				 decks[i].main_deck, decks[i].extra_deck);
+	}
 }
 
 #if defined(UNICODE)
@@ -90,26 +74,25 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	for(int j = 1; j < argc; j++) {
-		std::ifstream replay_file(argv[j], std::ifstream::binary);
-		if(!replay_file.is_open()) {
-			return EXIT_FAILURE;
-		}
-		std::vector<uint8_t> contents((std::istreambuf_iterator<char>(replay_file)),
-									  std::istreambuf_iterator<char>());
-		replay_file.close();
-		Replay replay(contents);
-		auto players = replay.GetPlayerNames();
-		if(players.empty()) {
-			return EXIT_FAILURE;
-		}
-		auto decks = replay.GetPlayerDecks();
-		if(players.size() > decks.size()) {
-			return EXIT_FAILURE;
-		}
-		path_string filename = GetFilename(argv[j]);
-		for(int i = 0; i < decks.size(); i++) {
-			SaveDeck(filename + I18N("_") + I18N("player") + tostring(i) + I18N("_") + convert_string(players[i]) + I18N(".ydk"),
-					 decks[i].main_deck, decks[i].extra_deck);
+		path_string file = argv[j];
+		if(Utils::IsFolder(file)) {
+			auto filename = Utils::GetFileName(file);
+			if(Utils::MakeDirectory(filename + I18N("_extracted"))) {
+				std::vector<path_string> files;
+				Utils::IterateFolder(file, [&files](path_string name, bool isdir) {
+					if(!isdir) {
+						files.push_back(name);
+					}
+				});
+				auto prev_dir = Utils::GetDirectory();
+				Utils::ChangeDirectory(filename + I18N("_extracted"));
+				for(auto& replay : files) {
+					ParseReplay(file + SEPARATOR + replay);
+				}
+				Utils::ChangeDirectory(prev_dir);
+			}
+		} else {
+			ParseReplay(file);
 		}
 	}
 	return EXIT_SUCCESS;
