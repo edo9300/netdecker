@@ -1,0 +1,40 @@
+language: cpp
+sudo: required
+dist: xenial
+git:
+  depth: 1
+env:
+  global:
+  - BUILD_CONFIG=release
+  - MSBUILD_PATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin"
+matrix:
+  include:
+  - name: "Windows 10"
+    os: windows
+  - name: "Xenial GCC5"
+    os: linux
+    compiler: gcc
+  - name: "Xenial LLVM7"
+    os: linux
+    compiler: clang
+    deploy: false
+  - name: "Mojave"
+    os: osx
+    osx_image: xcode10.3
+    env: MACOSX_DEPLOYMENT_TARGET=10.11
+script:
+- mkdir -p build && cd build
+- cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release --parallel 2
+- cd ..
+before_deploy:
+- if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then mv build/ygopen-netdecker build/ygopen-netdecker-$TRAVIS_OS_NAME; fi
+deploy:
+  provider: releases
+  api_key: $OAUTH_TOKEN
+  overwrite: true
+  skip_cleanup: true
+  file:
+  - build/Release/ygopen-netdecker.exe
+  - build/ygopen-netdecker-$TRAVIS_OS_NAME
+  on:
+    tags: true
