@@ -25,7 +25,7 @@
 
 Replay::Replay() : yrp(nullptr), data_position(0) {}
 
-Replay::~Replay() {}
+Replay::~Replay() = default;
 
 bool Replay::OpenReplayFromBuffer(std::vector<uint8_t> contents) {
 	memcpy(&pheader, contents.data(), sizeof(pheader));
@@ -34,7 +34,7 @@ bool Replay::OpenReplayFromBuffer(std::vector<uint8_t> contents) {
 	}
 	contents.erase(contents.begin(), contents.begin() + sizeof(pheader));
 	comp_size = contents.size();
-	if (pheader.flag & REPLAY_COMPRESSED) {
+	if ((pheader.flag & REPLAY_COMPRESSED) != 0u) {
 		replay_size = pheader.datasize;
 		replay_data.resize(replay_size);
 		if (LzmaUncompress(replay_data.data(), &replay_size,
@@ -60,15 +60,15 @@ bool Replay::OpenReplayFromBuffer(std::vector<uint8_t> contents) {
 bool Replay::ReadNextPacket(ReplayPacket *packet) {
 	if (!can_read)
 		return false;
-	unsigned char message = (unsigned char)Read<int8_t>();
+	auto message = static_cast<unsigned char>(Read<int8_t>());
 	if (!can_read)
 		return false;
 	packet->message = message;
-	int len = Read<int32_t>();
+	auto len = Read<int32_t>();
 	if (!can_read || len == -1)
 		return false;
 	packet->data.resize(len);
-	ReadData((char *)packet->data.data(), packet->data.size());
+	ReadData(reinterpret_cast<char *>(packet->data.data()), packet->data.size());
 	return true;
 }
 
@@ -97,29 +97,29 @@ ReplayDeckList Replay::GetPlayerDecks() {
 
 void Replay::ParseNames() {
 	players.clear();
-	if (pheader.flag & REPLAY_SINGLE_MODE) {
+	if ((pheader.flag & REPLAY_SINGLE_MODE) != 0u) {
 		wchar_t namebuf[20];
 		ReadName(namebuf);
-		players.push_back(namebuf);
+		players.emplace_back(namebuf);
 		ReadName(namebuf);
-		players.push_back(namebuf);
+		players.emplace_back(namebuf);
 		home_count = 1;
 		opposing_count = 1;
 		return;
 	}
 	auto f = [this](size_t &count) {
-		if (pheader.flag & REPLAY_NEWREPLAY)
+		if ((pheader.flag & REPLAY_NEWREPLAY) != 0u)
 			count = Read<size_t>();
-		else if (pheader.flag & REPLAY_TAG)
+		else if ((pheader.flag & REPLAY_TAG) != 0u)
 			count = 2;
-		else if (pheader.flag & REPLAY_RELAY)
+		else if ((pheader.flag & REPLAY_RELAY) != 0u)
 			count = 3;
 		else
 			count = 1;
 		for (int i = 0; i < count; i++) {
 			wchar_t namebuf[20];
 			ReadName(namebuf);
-			players.push_back(namebuf);
+			players.emplace_back(namebuf);
 		}
 	};
 	f(home_count);
@@ -134,7 +134,7 @@ void Replay::ParseParams() {
 		params.draw_count = Read<int32_t>();
 	}
 	params.duel_flags = Read<int32_t>();
-	if (pheader.flag & REPLAY_SINGLE_MODE && pheader.id == REPLAY_YRP1) {
+	if (((pheader.flag & REPLAY_SINGLE_MODE) != 0u) && pheader.id == REPLAY_YRP1) {
 		/*size_t slen = */Read<uint16_t>();
 		/*scriptname.resize(slen);
 		ReadData(&scriptname[0], slen);*/
@@ -142,15 +142,15 @@ void Replay::ParseParams() {
 }
 void Replay::ParseDecks() {
 	decks.clear();
-	if (pheader.id != REPLAY_YRP1 || pheader.flag & REPLAY_SINGLE_MODE)
+	if (pheader.id != REPLAY_YRP1 || ((pheader.flag & REPLAY_SINGLE_MODE) != 0u))
 		return;
 	for (int i = 0; i < home_count + opposing_count; i++) {
 		ReplayDeck tmp;
-		int main = Read<int32_t>();
+		auto main = Read<int32_t>();
 		for (int i = 0; i < main; ++i)
 			tmp.main_deck.push_back(Read<int32_t>());
 		std::vector<int> extra_deck;
-		int extra = Read<int32_t>();
+		auto extra = Read<int32_t>();
 		for (int i = 0; i < extra; ++i)
 			tmp.extra_deck.push_back(Read<int32_t>());
 		decks.push_back(tmp);
@@ -191,7 +191,7 @@ bool Replay::ReadData(void *data, unsigned int length) {
 		can_read = false;
 		return false;
 	}
-	if (length)
+	if (length != 0u)
 		memcpy(data, &replay_data[data_position], length);
 	data_position += length;
 	return true;

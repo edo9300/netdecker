@@ -31,15 +31,15 @@ namespace Utils {
 #ifdef _WIN32
 		return !!(GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
 #else
-		struct stat s;
-		return (stat(path.c_str(), &s) == 0) && !!(s.st_mode & S_IFDIR);
+		struct stat s{};
+		return (stat(path.c_str(), &s) == 0) && !((s.st_mode & S_IFDIR) == 0u);
 #endif
 	}
 	bool MakeDirectory(const path_string& path) {
 #ifdef _WIN32
 		return CreateDirectory(path.c_str(), NULL) || ERROR_ALREADY_EXISTS == GetLastError();
 #else
-		return !mkdir(&path[0], 0777) || errno == EEXIST;
+		return (mkdir(&path[0], 0777) == 0) || errno == EEXIST;
 #endif
 	}
 	bool ChangeDirectory(const path_string & path) {
@@ -57,12 +57,12 @@ namespace Utils {
 		return I18N("");
 #else
 		char Buffer[PATH_MAX];
-		if(getcwd(Buffer, PATH_MAX) != NULL)
+		if(getcwd(Buffer, PATH_MAX) != nullptr)
 			return Buffer;
 		return "";
 #endif
 	}
-	path_string GetFileName(path_string file) {
+	path_string GetFileName(const path_string& file) {
 		size_t dashpos = file.find_last_of(SEPARATOR);
 		if(dashpos == path_string::npos)
 			dashpos = 0;
@@ -88,7 +88,7 @@ namespace Utils {
 		DIR * dir;
 		struct dirent * dirp = nullptr;
 		if((dir = opendir(path.c_str())) != nullptr) {
-			struct stat fileStat;
+			struct stat fileStat{};
 			while((dirp = readdir(dir)) != nullptr) {
 				stat((path + SEPARATOR + dirp->d_name).c_str(), &fileStat);
 				cb(dirp->d_name, !!S_ISDIR(fileStat.st_mode));
@@ -103,4 +103,4 @@ namespace Utils {
 		return myconv.to_bytes(str);
 	}
 	#endif
-}
+} // namespace Utils

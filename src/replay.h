@@ -72,24 +72,24 @@ public:
 	ReplayDeckList GetPlayerDecks();
 	int GetPlayersCount(int side);
 	std::unique_ptr<Replay> yrp;
-	ReplayHeader pheader;
+	ReplayHeader pheader{};
 	std::vector<uint8_t> replay_data;
 	std::vector<uint8_t> comp_data;
-	size_t replay_size;
-	size_t comp_size;
+	size_t replay_size{};
+	size_t comp_size{};
 	struct duel_parameters {
 		int start_lp;
 		int start_hand;
 		int draw_count;
 		int duel_flags;
 	};
-	duel_parameters params;
+	duel_parameters params{};
 
 private:
 	bool ReadData(void *data, unsigned int length);
 	bool ReadNextPacket(ReplayPacket *packet);
 	size_t data_position;
-	bool can_read;
+	bool can_read{};
 	template <typename T> T Read();
 	bool ReadName(wchar_t *data);
 	void ParseNames();
@@ -97,8 +97,8 @@ private:
 	void ParseDecks();
 	void ParseStream();
 	std::vector<std::wstring> players;
-	size_t home_count;
-	size_t opposing_count;
+	size_t home_count{};
+	size_t opposing_count{};
 	ReplayDeckList decks;
 };
 

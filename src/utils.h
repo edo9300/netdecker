@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -55,7 +56,7 @@ namespace Utils {
 	bool MakeDirectory(const path_string& path);
 	bool ChangeDirectory(const path_string& path);
 	path_string GetDirectory();
-	path_string GetFileName(path_string file);
+	path_string GetFileName(const path_string& file);
 	void IterateFolder(const path_string& path, const std::function<void(path_string, bool)>& cb);
 #ifndef UNICODE
 	std::string wstring_to_utf8(const std::wstring &str);
