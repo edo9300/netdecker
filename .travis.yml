@@ -5,8 +5,7 @@ git:
   depth: 1
 env:
   global:
-  - BUILD_CONFIG=release
-  - MSBUILD_PATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin"
+  - BUILD_CONFIG=Release
 matrix:
   include:
   - name: "Windows 10"
@@ -24,17 +23,24 @@ matrix:
     env: MACOSX_DEPLOYMENT_TARGET=10.11
 script:
 - mkdir -p build && cd build
-- cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release --parallel 2
+- cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIG && cmake --build . --config $BUILD_CONFIG --parallel 2
 - cd ..
 before_deploy:
-- if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then mv build/ygopen-netdecker build/ygopen-netdecker-$TRAVIS_OS_NAME; fi
+- mkdir -p ygopen-netdecker && cp LICENSE README.md ygopen-netdecker
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+    mv build/$BUILD_CONFIG/ygopen-netdecker.exe ygopen-netdecker;
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Compress-Archive -Path ygopen-netdecker -DestinationPath ygopen-netdecker-$TRAVIS_OS_NAME";
+  else
+    mv build/ygopen-netdecker ygopen-netdecker/ygopen-netdecker;
+    tar -zcf ygopen-netdecker-$TRAVIS_OS_NAME.tar.gz ygopen-netdecker;
+  fi
 deploy:
   provider: releases
   api_key: $OAUTH_TOKEN
   overwrite: true
   skip_cleanup: true
   file:
-  - build/Release/ygopen-netdecker.exe
-  - build/ygopen-netdecker-$TRAVIS_OS_NAME
+  - ygopen-netdecker-$TRAVIS_OS_NAME.zip
+  - ygopen-netdecker-$TRAVIS_OS_NAME.tar.gz
   on:
     tags: true

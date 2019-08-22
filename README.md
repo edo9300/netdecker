@@ -5,13 +5,13 @@ Free/libre and open-source utility to extract YGOPro deck files from replays.
 ## Usage
 Download binaries from [releases](https://github.com/edo9300/netdecker/releases).
 
-Windows: `ygopen-netdecker.exe <replayname> <...>`
+Windows: `ygopen-netdecker.exe <replayname|folder> <...>`
 
-macOS/Linux: `./ygopen-netdecker <replayname> <...>`
+macOS/Linux: `./ygopen-netdecker <replayname|folder> <...>`
 
 This outputs the decks for both players into the working directory as `replayname_playerX_playername.ydk`.
 
-On Windows, you can also drag replays on top of the exe to convert it, and decks will be output in the exe's directory.
+On Windows, you can also drag replays and folders on top of the exe to convert them.
 
 ## Building
 The YGOpen Netdecker builds with [CMake](https://cmake.org/download/) 3.12 or later and depends only on the public-domain LZMA library, 
@@ -32,7 +32,7 @@ The YGOpen Netdecker is distributed under the GNU Affero General Public License,
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-See `LICENSE` for more details.
+See [`LICENSE`](https://github.com/edo9300/netdecker/blob/master/LICENSE) for more details.
 
 ## Credits
 
