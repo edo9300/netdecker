@@ -60,8 +60,11 @@ void ParseReplay(const path_string & path) {
 	}
 	path_string filename = Utils::GetFileName(path);
 	for(int i = 0; i < decks.size(); i++) {
-		SaveDeck(filename + I18N("_") + I18N("player") + tostring(i) + I18N("_") + convert_string(players[i]) + I18N(".ydk"),
-				 decks[i].main_deck, decks[i].extra_deck);
+#define SAVE(name) SaveDeck(filename + I18N("_") + I18N("player") + tostring(i) + I18N("_") + name + I18N(".ydk"), decks[i].main_deck, decks[i].extra_deck)
+		if(!SAVE(convert_string(players[i]))) {
+			SAVE(I18N("")); // if the player name is not allowed in a file
+		}
+#undef SAVE
 	}
 }
 
