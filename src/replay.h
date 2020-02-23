@@ -87,6 +87,7 @@ public:
 
 private:
 	bool ReadData(void *data, unsigned int length);
+	bool ReadData(std::vector<uint8_t>& data, unsigned int length);
 	bool ReadNextPacket(ReplayPacket *packet);
 	size_t data_position;
 	bool can_read{};

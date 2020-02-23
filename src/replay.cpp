@@ -67,9 +67,7 @@ bool Replay::ReadNextPacket(ReplayPacket *packet) {
 	auto len = Read<int32_t>();
 	if (!can_read || len == -1)
 		return false;
-	packet->data.resize(len);
-	ReadData(reinterpret_cast<char *>(packet->data.data()), packet->data.size());
-	return true;
+	return ReadData(packet->data, len);
 }
 
 void Replay::ParseStream() {
@@ -194,6 +192,20 @@ bool Replay::ReadData(void *data, unsigned int length) {
 	if (length != 0u)
 		memcpy(data, &replay_data[data_position], length);
 	data_position += length;
+	return true;
+}
+bool Replay::ReadData(std::vector<uint8_t>& data, unsigned int length) {
+	if(!can_read)
+		return false;
+	if((replay_data.size() - data_position) < length) {
+		can_read = false;
+		return false;
+	}
+	if(length) {
+		data.resize(length);
+		memcpy(data.data(), &replay_data[data_position], length);
+		data_position += length;
+	}
 	return true;
 }
 
