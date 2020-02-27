@@ -35,7 +35,7 @@ before_deploy:
     tar -zcf ygopen-netdecker-$TRAVIS_OS_NAME.tar.gz ygopen-netdecker;
   fi
 deploy:
-  provider: releases
+- provider: releases
   api_key: $OAUTH_TOKEN
   overwrite: true
   skip_cleanup: true
