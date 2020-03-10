@@ -5,7 +5,7 @@ git:
 env:
   global:
   - BUILD_CONFIG=Release
-jobs:
+matrix:
   include:
   - name: "Windows 10"
     os: windows
